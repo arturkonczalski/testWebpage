@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Izometryczny Stolik z Wachlarzami Kart</title>
+    <title>Izometryczny Stół Karciany z Podglądem</title>
     <style>
         body {
             margin: 0;
@@ -26,11 +26,20 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             border: 1px solid #333;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         select {
             padding: 5px 10px;
-            font-size: 16px;
+            font-size: 14px;
             background: #2a2a2a;
             color: white;
             border: 1px solid #555;
@@ -54,42 +63,76 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 250px;
-            height: 180px;
-            background: rgba(30, 30, 35, 0.6);
+            width: 280px;
+            height: 190px;
+            background: rgba(30, 30, 35, 0.4);
             border: 2px dashed #444;
             border-radius: 15px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            color: #666;
+            font-size: 13px;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 2px;
+            pointer-events: none;
+            z-index: 5;
         }
 
-        /* Slot gracza (jego obszar kart) */
+        /* Kontener na podgląd karty wybranej hoverem na środku */
+        .preview-card-slot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .preview-card-slot.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Duża karta podglądu na środku */
+        .big-card {
+            width: 140px;
+            height: 200px;
+            background: linear-gradient(135deg, #3a506b, #1c2541);
+            border: 3px solid #ffb703;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px rgba(255, 183, 3, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .big-card .card-title { font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.5); width: 100%; text-align: center; border-radius: 3px; padding: 2px 0;}
+        .big-card .card-body { font-size: 12px; text-align: center; color: #b2dfdb; }
+
+        /* Slot gracza */
         .player-slot {
             position: absolute;
             transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             transform-origin: bottom center;
-            cursor: pointer;
-            z-index: 1;
         }
 
-        /* Kontener wachlarza kart */
         .card-hand {
             position: relative;
-            height: 100px;
+            height: 90px;
             display: flex;
             justify-content: center;
         }
 
-        /* Pojedyncza karta */
+        /* Pojedyncza karta w wachlarzu */
         .card {
             position: absolute;
-            width: 50px;
-            height: 75px;
+            width: 45px;
+            height: 70px;
             background: linear-gradient(135deg, #3a506b, #1c2541);
             border: 1.5px solid #5bc0be;
             border-radius: 5px;
@@ -98,14 +141,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 4px;
+            padding: 3px;
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             transform-origin: bottom center;
         }
 
+        .card:hover {
+            border-color: #ffb703;
+            box-shadow: 0 0 10px #ffb703;
+            z-index: 100;
+        }
+
         .card-title {
-            font-size: 8px;
+            font-size: 7px;
             font-weight: bold;
             background: rgba(0,0,0,0.4);
             width: 100%;
@@ -114,32 +164,36 @@
         }
 
         .card-body {
-            font-size: 7px;
+            font-size: 6px;
             text-align: center;
             color: #b2dfdb;
         }
 
-        /* Etykieta gracza pod jego kartami */
-        .player-label {
-            text-align: center;
-            font-size: 11px;
+        /* Informacje o graczu i licznik kart */
+        .player-info-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             margin-top: 4px;
+        }
+
+        .player-label {
+            font-size: 11px;
             font-weight: bold;
             color: #ccc;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* Efekt HOVER: Zoom całego wachlarza gracza */
-        .player-slot:hover {
-            z-index: 1000;
-        }
-
-        .player-slot:hover .card {
-            /* Po najechaniu karty rozsuwają się szerzej i mocno rosną */
-            transform: var(--hover-transform) scale(2.2) translateY(-35px) !important;
-            box-shadow: 0 10px 20px rgba(0, 180, 216, 0.5);
-            border-color: #ffb703;
-            z-index: 10;
+        .card-counter-badge {
+            background: #2b2d42;
+            border: 1px solid #8d99ae;
+            color: #edf2f4;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -147,86 +201,128 @@
 
     <h2>Izometryczny Stół Karciany (1024x768)</h2>
     <div class="controls">
-        <label for="playerCount">Liczba graczy: </label>
-        <select id="playerCount" onchange="updateTable()">
-            <option value="4">4 Graczy (Kwadrat)</option>
-            <option value="5">5 Graczy (Pentagon)</option>
-            <option value="6">6 Graczy (Heksagon)</option>
-            <option value="7">7 Graczy (Heptagon)</option>
-            <option value="8" selected>8 Graczy (Oktagon)</option>
-        </select>
+        <div class="control-group">
+            <label for="playerCount">Liczba graczy: </label>
+            <select id="playerCount" onchange="updateTable()">
+                <option value="4">4 Graczy (Kwadrat)</option>
+                <option value="5">5 Graczy (Pentagon)</option>
+                <option value="6">6 Graczy (Heksagon)</option>
+                <option value="7">7 Graczy (Heptagon)</option>
+                <option value="8" selected>8 Graczy (Oktagon)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="handSize">Kart na ręce: </label>
+            <select id="handSize" onchange="updateTable()">
+                <option value="5">5 kart</option>
+                <option value="8">8 kart</option>
+                <option value="10" selected>10 kart</option>
+                <option value="15">15 kart</option>
+                <option value="20">20 kart</option>
+                <option value="25">25 kart</option>
+            </select>
+        </div>
     </div>
 
     <div class="table-container" id="tableContainer">
         <div class="table-center">Środek Stołu</div>
+        <!-- Kontener na scentralizowany podgląd karty -->
+        <div class="preview-card-slot" id="previewSlot">
+            <div class="big-card" id="bigCardContent">
+                <div class="card-title" id="bigTitle">-</div>
+                <div class="card-body" id="bigBody">-</div>
+                <div style="font-size:10px; color:#ffb703;">Podgląd Karty</div>
+            </div>
+        </div>
     </div>
 
     <script>
         function updateTable() {
             const container = document.getElementById('tableContainer');
-            // Usuń poprzednie sloty graczy
+            // Usuń stare sloty graczy (zostaw środek i podgląd)
             container.querySelectorAll('.player-slot').forEach(slot => slot.remove());
 
             const count = parseInt(document.getElementById('playerCount').value);
-            const radiusX = 360; // Promień elipsy poziomy
-            const radiusY = 240; // Promień elipsy pionowy (spłaszczenie do izometrii)
-            const centerX = 512; // Środek 1024 / 2
-            const centerY = 410; // Środek Y stołu
+            const totalCards = parseInt(document.getElementById('handSize').value);
+
+            const radiusX = 360;
+            const radiusY = 240;
+            const centerX = 512;
+            const centerY = 410;
+
+            const previewSlot = document.getElementById('previewSlot');
+            const bigTitle = document.getElementById('bigTitle');
+            const bigBody = document.getElementById('bigBody');
 
             for (let i = 0; i < count; i++) {
-                // Obliczanie kąta.
-                // Aby Gracz 1 (i=0) był na dole, dodajemy przesunięcie +Math.PI / 2
+                // Gracz 1 zawsze na dole (+Math.PI / 2)
                 const angle = (i * 2 * Math.PI / count) + (Math.PI / 2);
 
-                // Pozycja X i Y na elipsie stołu
-                const x = centerX + radiusX * Math.cos(angle) - 75; // korekta na szerokość wachlarza
+                const x = centerX + radiusX * Math.cos(angle) - 75;
                 const y = centerY + radiusY * Math.sin(angle) - 40;
 
-                // Głębia: gracze na dole mają skalę bliską 1.0, na górze mocno pomniejszoną (np. do 0.4)
-                const sinVal = Math.sin(angle); // od -1 (góra) do 1 (dół)
+                const sinVal = Math.sin(angle);
                 const depthFactor = 0.45 + 0.55 * ((sinVal + 1) / 2);
 
-                // Tworzenie kontenera gracza
                 const slot = document.createElement('div');
                 slot.className = 'player-slot';
                 slot.style.left = `${x}px`;
                 slot.style.top = `${y}px`;
                 slot.style.transform = `scale(${depthFactor})`;
 
-                // Tworzenie wachlarza 10 kart
                 const handDiv = document.createElement('div');
                 handDiv.className = 'card-hand';
 
-                const totalCards = 10;
+                // Generowanie wachlarza kart
                 for (let c = 0; c < totalCards; c++) {
                     const card = document.createElement('div');
                     card.className = 'card';
 
-                    // Obliczanie wachlarzowego rozłożenia kart w spoczynku i po najechaniu
-                    // c - (totalCards-1)/2 centruje wachlarz
+                    // Dynamiczne wyliczenie rozłożenia w zależności od ilości kart
                     const offsetIndex = c - (totalCards - 1) / 2;
-                    const restLeft = 75 + (offsetIndex * 6); // lekkie zachodzenie na siebie w spoczynku
-                    const hoverTranslateX = offsetIndex * 22; // rozszerzenie wachlarza po najechaniu
-                    const hoverRotate = offsetIndex * 4;     // delikatny obrót wachlarza
+                    // Jeśli kart jest bardzo dużo, zmniejszamy odstęp między nimi, by się mieściły
+                    const spacing = totalCards > 15 ? 12 : (totalCards > 10 ? 16 : 22);
+                    const restLeft = 75 + (offsetIndex * (spacing * 0.4));
 
                     card.style.left = `${restLeft}px`;
-                    // Zapisujemy zmienną CSS do efektu hover
-                    card.style.setProperty('--hover-transform', `translateX(${hoverTranslateX}px) rotate(${hoverRotate}deg)`);
 
+                    const cardName = `P${i+1} : K${c+1}`;
                     card.innerHTML = `
                         <div class="card-title">P${i+1}</div>
                         <div class="card-body">K${c+1}</div>
                     `;
+
+                    // Obsługa najechania myszką (aktywacja centralnego podglądu)
+                    card.addEventListener('mouseenter', () => {
+                        bigTitle.innerText = `Gracz ${i + 1}`;
+                        bigBody.innerText = `Karta nr ${c + 1}\n(Atak: ${10 + c}, Obrona: ${5 + c})`;
+                        previewSlot.classList.add('active');
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        previewSlot.classList.remove('active');
+                    });
+
                     handDiv.appendChild(card);
                 }
 
-                // Etykieta gracza
+                // Pasek informacji o graczu wraz z licznikiem kart
+                const infoBar = document.createElement('div');
+                infoBar.className = 'player-info-bar';
+
                 const label = document.createElement('div');
                 label.className = 'player-label';
                 label.innerText = (i === 0) ? "Ty (Gracz 1)" : `Gracz ${i + 1}`;
 
+                const badge = document.createElement('div');
+                badge.className = 'card-counter-badge';
+                badge.innerText = `${totalCards} kart`;
+
+                infoBar.appendChild(label);
+                infoBar.appendChild(badge);
+
                 slot.appendChild(handDiv);
-                slot.appendChild(label);
+                slot.appendChild(infoBar);
                 container.appendChild(slot);
             }
         }
