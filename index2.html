@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izometryczny Stół Karciany - Wachlarz na Środku</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h2 { margin-bottom: 10px; }
+
+        .controls {
+            margin-bottom: 15px;
+            background: #1e1e1e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select {
+            padding: 5px 10px;
+            font-size: 14px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+
+        /* Scena 1024x768 */
+        .table-container {
+            position: relative;
+            width: 1024px;
+            height: 768px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: radial-gradient(circle, #202025 0%, #0d0d0f 85%);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        .table-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 220px;
+            background: rgba(30, 30, 35, 0.3);
+            border: 2px dashed #444;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Kontener na scentralizowany powiększony wachlarz */
+        .center-preview-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none; /* Włączamy pointer events dopiero gdy aktywny */
+        }
+
+        .center-preview-container.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .center-preview-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffb703;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.6);
+            padding: 4px 15px;
+            border-radius: 6px;
+            border: 1px solid #ffb703;
+        }
+
+        .center-hand-wrapper {
+            position: relative;
+            height: 180px;
+            width: 600px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Duże karty w centralnym podglądzie */
+        .big-card {
+            position: absolute;
+            width: 100px;
+            height: 150px;
+            background: linear-gradient(135deg, #3a506b, #1c2541);
+            border: 2px solid #5bc0be;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+            transform-origin: bottom center;
+            cursor: pointer;
+        }
+
+        .big-card:hover {
+            transform: translateY(-30px) scale(1.25) !important;
+            border-color: #ffb703;
+            box-shadow: 0 15px 35px rgba(255, 183, 3, 0.4);
+            z-index: 3000;
+        }
+
+        .big-card .card-title { font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.4); width: 100%; text-align: center; border-radius: 3px; padding: 2px 0;}
+        .big-card .card-body { font-size: 10px; text-align: center; color: #b2dfdb; }
+
+        /* Slot gracza na stole */
+        .player-slot {
+            position: absolute;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transform-origin: bottom center;
+            cursor: pointer;
+        }
+
+        .card-hand {
+            position: relative;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mała karta na stole */
+        .card {
+            position: absolute;
+            width: 45px;
+            height: 70px;
+            background: linear-gradient(135deg, #3a506b, #1c2541);
+            border: 1.5px solid #5bc0be;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px;
+            box-sizing: border-box;
+            transform-origin: bottom center;
+        }
+
+        .card-title {
+            font-size: 7px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            width: 100%;
+            text-align: center;
+            border-radius: 2px;
+        }
+
+        .card-body {
+            font-size: 6px;
+            text-align: center;
+            color: #b2dfdb;
+        }
+
+        /* Informacje o graczu i licznik kart */
+        .player-info-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .player-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #ccc;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .card-counter-badge {
+            background: #2b2d42;
+            border: 1px solid #8d99ae;
+            color: #edf2f4;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Izometryczny Stół Karciany (1024x768)</h2>
+    <div class="controls">
+        <div class="control-group">
+            <label for="playerCount">Liczba graczy: </label>
+            <select id="playerCount" onchange="updateTable()">
+                <option value="4">4 Graczy (Kwadrat)</option>
+                <option value="5">5 Graczy (Pentagon)</option>
+                <option value="6">6 Graczy (Heksagon)</option>
+                <option value="7">7 Graczy (Heptagon)</option>
+                <option value="8" selected>8 Graczy (Oktagon)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="handSize">Kart na ręce: </label>
+            <select id="handSize" onchange="updateTable()">
+                <option value="5">5 kart</option>
+                <option value="8">8 kart</option>
+                <option value="10" selected>10 kart</option>
+                <option value="15">15 kart</option>
+                <option value="20">20 kart</option>
+                <option value="25">25 kart</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container" id="tableContainer">
+        <div class="table-center">Środek Stołu</div>
+
+        <!-- Centralny kontener na powiększony wachlarz gracza -->
+        <div class="center-preview-container" id="centerPreview">
+            <div class="center-preview-title" id="previewPlayerTitle">Gracz X</div>
+            <div class="center-hand-wrapper" id="centerHandWrapper"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateTable() {
+            const container = document.getElementById('tableContainer');
+            // Usuń stare sloty graczy
+            container.querySelectorAll('.player-slot').forEach(slot => slot.remove());
+
+            const count = parseInt(document.getElementById('playerCount').value);
+            const totalCards = parseInt(document.getElementById('handSize').value);
+
+            const radiusX = 360;
+            const radiusY = 240;
+            const centerX = 512;
+            const centerY = 410;
+
+            const centerPreview = document.getElementById('centerPreview');
+            const previewTitle = document.getElementById('previewPlayerTitle');
+            const centerHandWrapper = document.getElementById('centerHandWrapper');
+
+            for (let i = 0; i < count; i++) {
+                const angle = (i * 2 * Math.PI / count) + (Math.PI / 2);
+
+                const x = centerX + radiusX * Math.cos(angle) - 75;
+                const y = centerY + radiusY * Math.sin(angle) - 40;
+
+                const sinVal = Math.sin(angle);
+                const depthFactor = 0.45 + 0.55 * ((sinVal + 1) / 2);
+
+                const slot = document.createElement('div');
+                slot.className = 'player-slot';
+                slot.style.left = `${x}px`;
+                slot.style.top = `${y}px`;
+                slot.style.transform = `scale(${depthFactor})`;
+
+                const handDiv = document.createElement('div');
+                handDiv.className = 'card-hand';
+
+                // Generowanie małych kart na stole
+                for (let c = 0; c < totalCards; c++) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    const spacing = totalCards > 15 ? 12 : (totalCards > 10 ? 16 : 22);
+                    const restLeft = 75 + ((c - (totalCards - 1) / 2) * (spacing * 0.4));
+                    card.style.left = `${restLeft}px`;
+
+                    card.innerHTML = `
+                        <div class="card-title">P${i+1}</div>
+                        <div class="card-body">K${c+1}</div>
+                    `;
+                    handDiv.appendChild(card);
+                }
+
+                // Obsługa najechania na cały obszar gracza (lub jego karty)
+                slot.addEventListener('mouseenter', () => {
+                    previewTitle.innerText = (i === 0) ? "Twój Wachlarz Kart (Gracz 1)" : `Wachlarz Kart: Gracz ${i + 1}`;
+                    centerHandWrapper.innerHTML = ''; // Wyczyść poprzedni podgląd
+
+                    // Generowanie powiększonego wachlarza na środku
+                    for (let c = 0; c < totalCards; c++) {
+                        const bigCard = document.createElement('div');
+                        bigCard.className = 'big-card';
+
+                        // Rozłożenie wachlarzowe na środku
+                        const offsetIndex = c - (totalCards - 1) / 2;
+                        const bigSpacing = totalCards > 15 ? 25 : (totalCards > 10 ? 32 : 45);
+                        const leftPos = 250 + (offsetIndex * bigSpacing);
+                        const rotateAngle = offsetIndex * 3; // delikatny wachlarzowy obrót
+
+                        bigCard.style.left = `${leftPos}px`;
+                        bigCard.style.transform = `rotate(${rotateAngle}deg)`;
+
+                        bigCard.innerHTML = `
+                            <div class="card-title">Gracz ${i+1}</div>
+                            <div class="card-body">Karta #${c+1}<br>Atak: ${10+c}<br>Obrona: ${5+c}</div>
+                            <div style="font-size:8px; color:#5bc0be;">ID: ${c+1}</div>
+                        `;
+                        centerHandWrapper.appendChild(bigCard);
+                    }
+
+                    centerPreview.classList.add('active');
+                });
+
+                // Ukrywanie podglądu po zepsuciu najechania (wyjściu myszki ze slotu)
+                slot.addEventListener('mouseleave', (e) => {
+                    // Sprawdzamy czy kursor nie przeszedł bezpośrednio na okno środkowego podglądu
+                    setTimeout(() => {
+                        if (!centerPreview.matches(':hover') && !slot.matches(':hover')) {
+                            centerPreview.classList.remove('active');
+                        }
+                    }, 50);
+                });
+
+                // Dodatkowe zabezpieczenie dla centralnego podglądu, żeby nie znikał od razu
+                centerPreview.addEventListener('mouseleave', () => {
+                    centerPreview.classList.remove('active');
+                });
+
+                // Informacje o graczu i licznik kart
+                const infoBar = document.createElement('div');
+                infoBar.className = 'player-info-bar';
+
+                const label = document.createElement('div');
+                label.className = 'player-label';
+                label.innerText = (i === 0) ? "Ty (Gracz 1)" : `Gracz ${i + 1}`;
+
+                const badge = document.createElement('div');
+                badge.className = 'card-counter-badge';
+                badge.innerText = `${totalCards} kart`;
+
+                infoBar.appendChild(label);
+                infoBar.appendChild(badge);
+
+                slot.appendChild(handDiv);
+                slot.appendChild(infoBar);
+                container.appendChild(slot);
+            }
+        }
+
+        window.onload = updateTable;
+    </script>
+</body>
+</html>
